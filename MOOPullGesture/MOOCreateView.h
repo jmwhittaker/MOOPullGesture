@@ -39,6 +39,7 @@ typedef void (^MOOCreateViewConfiguration)(MOOCreateView *createView, UITableVie
 @property (nonatomic, strong) MOOCreateViewConfiguration configurationBlock;
 @property (nonatomic, strong) UITableViewCell *cell;
 @property (nonatomic, strong, readonly) MOOGradientView *gradientView;
+@property (nonatomic, strong) UIView *rotationView;
 
 - (id)initWithCell:(UITableViewCell *)cell;
 

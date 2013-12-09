@@ -12,7 +12,6 @@
 @interface MOOCreateView ()
 
 @property (nonatomic, strong) MOOGradientView *gradientView;
-@property (nonatomic, strong) UIView *rotationView;
 
 // Notification handling
 - (void)handleContentOffsetChangedNotification:(NSNotification *)notification;
