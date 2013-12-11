@@ -96,7 +96,7 @@
 - (void)layoutSubviews;
 {
     // Expand cell, gradientView, and rotationView to fit createView
-    self.cell.layer.bounds = self.bounds;
+    self.cell.frame = CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
     self.gradientView.layer.bounds = self.bounds;
     self.rotationView.layer.bounds = CGRectInset(self.bounds, -self.rotationView.layer.borderWidth, -self.rotationView.layer.borderWidth);
 
