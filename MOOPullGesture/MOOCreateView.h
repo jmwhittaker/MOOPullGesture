@@ -25,6 +25,12 @@ typedef void (^MOOCreateViewConfiguration)(MOOCreateView *createView, UITableVie
 
 @end
 
+// Visual style of create view
+typedef enum {
+    MOOCreateViewStyleFlat = 0,
+    MOOCreateViewStyle3D
+} MOOCreateViewStyle;
+
 @interface MOOCreateView : UIView <MOOTriggerView> 
 {
     __unsafe_unretained id<MOOCreateViewDelegate> _delegate;
@@ -42,5 +48,6 @@ typedef void (^MOOCreateViewConfiguration)(MOOCreateView *createView, UITableVie
 @property (nonatomic, strong) UIView *rotationView;
 
 - (id)initWithCell:(UITableViewCell *)cell;
+- (id)initWithCell:(UITableViewCell *)cell withStyle:(MOOCreateViewStyle)style;
 
 @end

@@ -9,7 +9,10 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-@interface MOOCreateView ()
+@interface MOOCreateView () {
+    MOOCreateViewStyle _currentStyle;
+}
+
 
 @property (nonatomic, strong) MOOGradientView *gradientView;
 
@@ -40,6 +43,23 @@
     return self;
 }
 
+- (id)initWithCell:(UITableViewCell *)cell withStyle:(MOOCreateViewStyle)style;
+{
+    if (style == MOOCreateViewStyle3D) {
+        // Create gradient view
+        self.gradientView = [[MOOGradientView alloc] initWithFrame:CGRectZero];
+        self.gradientView.layer.anchorPoint = CGPointZero;
+        
+        // Configure shadow gradient. If the effect is too strong, you can access the gradient view through the gradientView property and change the gradient colors and locations.
+        ((CAGradientLayer *)self.gradientView.layer).colors = [NSArray arrayWithObjects:(id)[UIColor colorWithWhite:0.0f alpha:0.4f].CGColor, (id)[UIColor colorWithWhite:0.0f alpha:0.8f].CGColor, nil];
+        ((CAGradientLayer *)self.gradientView.layer).locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.5f], [NSNumber numberWithFloat:1.0f], nil];
+        
+        _currentStyle = style;
+    }
+    
+    return [self initWithCell:cell];
+}
+
 - (id)initWithCell:(UITableViewCell *)cell;
 {
     if (!(self = [super initWithFrame:CGRectZero]))
@@ -61,14 +81,6 @@
 
     // Configure cell
     self.cell = cell;
-    
-    // Create gradient view
-    self.gradientView = [[MOOGradientView alloc] initWithFrame:CGRectZero];
-    self.gradientView.layer.anchorPoint = CGPointZero;
-    
-    // Configure shadow gradient. If the effect is too strong, you can access the gradient view through the gradientView property and change the gradient colors and locations.
-    ((CAGradientLayer *)self.gradientView.layer).colors = [NSArray arrayWithObjects:(id)[UIColor colorWithWhite:0.0f alpha:0.4f].CGColor, (id)[UIColor colorWithWhite:0.0f alpha:0.8f].CGColor, nil];
-    ((CAGradientLayer *)self.gradientView.layer).locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.5f], [NSNumber numberWithFloat:1.0f], nil];
 
     return self;
 }
@@ -100,15 +112,19 @@
     self.gradientView.layer.bounds = self.bounds;
     self.rotationView.layer.bounds = CGRectInset(self.bounds, -self.rotationView.layer.borderWidth, -self.rotationView.layer.borderWidth);
 
-    // Set rotation view anchorPoint to the max Y, accounting for border width
-    self.rotationView.layer.anchorPoint = CGPointMake(0.5f, 1.0f - self.rotationView.layer.borderWidth / CGRectGetHeight(self.rotationView.layer.bounds));
-    
-    // Position cell in the center of rotation view
-    CGPoint rotationCenter = CGPointMake(CGRectGetMidX(self.rotationView.layer.bounds), CGRectGetMidY(self.rotationView.layer.bounds));
-    self.cell.layer.position = rotationCenter;
-    
-    // Position gradientView in the top left
-    self.gradientView.layer.position = CGPointZero;
+    if (_currentStyle == MOOCreateViewStyle3D) {
+        self.rotationView.layer.bounds = CGRectInset(self.bounds, -self.rotationView.layer.borderWidth, -self.rotationView.layer.borderWidth);
+        
+        // Set rotation view anchorPoint to the max Y, accounting for border width
+        self.rotationView.layer.anchorPoint = CGPointMake(0.5f, 1.0f - self.rotationView.layer.borderWidth / CGRectGetHeight(self.rotationView.layer.bounds));
+        
+        // Position cell in the center of rotation view
+        CGPoint rotationCenter = CGPointMake(CGRectGetMidX(self.rotationView.layer.bounds), CGRectGetMidY(self.rotationView.layer.bounds));
+        self.cell.layer.position = rotationCenter;
+        
+        //Position gradientView in the top left
+        self.gradientView.layer.position = CGPointZero;
+    }
 }
 
 - (CGSize)sizeThatFits:(CGSize)size;
@@ -164,38 +180,41 @@
 
 - (void)handleContentOffsetChangedNotification:(NSNotification *)notification;
 {
-    /*
-     * Layer folding effect
-     */
-    
-    // Grab content offset
-    CGPoint contentOffset = [[notification.userInfo objectForKey:MOOKeyContentOffset] CGPointValue];
-    
-    // Calculate transition progress
-    CGFloat progress = MIN(-contentOffset.y / CGRectGetHeight(self.bounds), 1.0f);
-    
-    //
-    CGFloat angle = acosf(progress);
-    if (isnan(angle))
-        angle = 0.0f;
-    CATransform3D transform = CATransform3DMakeRotation(angle, 1.0f, 0.0f, 0.0f);
-    
-    // Perspective transform. Gradually decreases based on progress
-    if (angle > 0.0f)
-        transform.m24 = -1.f / 300.f + 1.f / 300.f * progress;
-    self.rotationView.layer.transform = transform;
-    
-    // Position at bottom of create view
-    CGFloat positionY = CGRectGetHeight(self.layer.bounds);
-    // 1px adjustment for table views with a 1px cell separator
-    if ([self.superview isKindOfClass:[UITableView class]])
-        if (((UITableView *)self.superview).separatorStyle == UITableViewCellSeparatorStyleSingleLine)
-            positionY -= 1.0f - progress;
-    
-    self.rotationView.layer.position = CGPointMake(CGRectGetMidX(self.layer.bounds), positionY);
-    
-    // Set opacity to mimic shadows
-    self.gradientView.layer.opacity = MAX(1.0f - progress, 0.0f);
+    if (_currentStyle == MOOCreateViewStyle3D) {
+        /*
+         * Layer folding effect
+         */
+        
+        // Grab content offset
+        CGPoint contentOffset = [[notification.userInfo objectForKey:MOOKeyContentOffset] CGPointValue];
+        
+        // Calculate transition progress
+        CGFloat progress = MIN(-contentOffset.y / CGRectGetHeight(self.bounds), 1.0f);
+        
+        //
+        CGFloat angle = acosf(progress);
+        if (isnan(angle))
+            angle = 0.0f;
+        CATransform3D transform = CATransform3DMakeRotation(angle, 1.0f, 0.0f, 0.0f);
+        
+        // Perspective transform. Gradually decreases based on progress
+        if (angle > 0.0f)
+            transform.m24 = -1.f / 300.f + 1.f / 300.f * progress;
+        self.rotationView.layer.transform = transform;
+        
+        // Position at bottom of create view
+        CGFloat positionY = CGRectGetHeight(self.layer.bounds);
+        // 1px adjustment for table views with a 1px cell separator
+        if ([self.superview isKindOfClass:[UITableView class]])
+            if (((UITableView *)self.superview).separatorStyle == UITableViewCellSeparatorStyleSingleLine)
+                positionY -= 1.0f - progress;
+        
+        self.rotationView.layer.position = CGPointMake(CGRectGetMidX(self.layer.bounds), positionY);
+        
+        // Set opacity to mimic shadows
+        self.gradientView.layer.opacity = MAX(1.0f - progress, 0.0f);
+        
+    }
 }
 
 #pragma mark - Getters and setters

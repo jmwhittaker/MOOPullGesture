@@ -58,7 +58,7 @@
     cell.imageView.image = [UIImage imageNamed:@"Arrow-Bucket.png"];
     
     // Create create view
-    MOOCreateView *createView = [[MOOCreateView alloc] initWithCell:cell];
+    MOOCreateView *createView = [[MOOCreateView alloc] initWithCell:cell withStyle:MOOCreateViewStyleFlat];
     createView.configurationBlock = ^(MOOCreateView *view, UITableViewCell *cell, MOOPullState state){
         if (![cell isKindOfClass:[UITableViewCell class]])
             return;
